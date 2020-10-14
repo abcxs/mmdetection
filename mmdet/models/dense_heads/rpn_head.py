@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import normal_init
+from mmcv.ops import batched_nms
 
-from mmdet.ops import batched_nms
 from ..builder import HEADS
 from .anchor_head import AnchorHead
 from .rpn_test_mixin import RPNTestMixin
@@ -18,8 +18,7 @@ class RPNHead(RPNTestMixin, AnchorHead):
     """  # noqa: W605
 
     def __init__(self, in_channels, **kwargs):
-        super(RPNHead, self).__init__(
-            1, in_channels, background_label=0, **kwargs)
+        super(RPNHead, self).__init__(1, in_channels, **kwargs)
 
     def _init_layers(self):
         """Initialize layers of the head."""
@@ -163,6 +162,6 @@ class RPNHead(RPNTestMixin, AnchorHead):
                 ids = ids[valid_inds]
 
         # TODO: remove the hard coded nms type
-        nms_cfg = dict(type='nms', iou_thr=cfg.nms_thr)
+        nms_cfg = dict(type='nms', iou_threshold=cfg.nms_thr)
         dets, keep = batched_nms(proposals, scores, ids, nms_cfg)
         return dets[:cfg.nms_post]
